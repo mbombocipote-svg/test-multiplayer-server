@@ -7,11 +7,18 @@ const wss = new WebSocketServer({ server });
 wss.on("connection", (ws) => {
   console.log("Cliente conectado");
 
-  ws.send("Hola! El servidor te ve 👀");
+  // Aviso de nuevo usuario
+  ws.send("✅ Bienvenido al chat!");
 
   ws.on("message", (msg) => {
-    console.log("Recibido:", msg.toString());
-    ws.send("Eco: " + msg.toString());
+    console.log("Mensaje recibido:", msg.toString());
+
+    // Reenviar a TODOS menos al que lo envió
+    wss.clients.forEach(client => {
+      if (client !== ws && client.readyState === ws.OPEN) {
+        client.send(msg.toString());
+      }
+    });
   });
 
   ws.on("close", () => console.log("Cliente desconectado"));
